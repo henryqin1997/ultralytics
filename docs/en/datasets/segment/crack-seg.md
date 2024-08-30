@@ -61,7 +61,7 @@ To train Ultralytics YOLOv8n model on the Crack Segmentation dataset for 100 epo
 
 The Crack Segmentation dataset comprises a varied collection of images and videos captured from multiple perspectives. Below are instances of data from the dataset, accompanied by their respective annotations:
 
-![Dataset sample image](https://github.com/RizwanMunawar/RizwanMunawar/assets/62513924/40ccc20a-9593-412f-b028-643d4a904d0e)
+![Dataset sample image](https://github.com/ultralytics/docs/releases/download/0/crack-segmentation-sample.avif)
 
 - This image presents an example of image object segmentation, featuring annotated bounding boxes with masks outlining identified objects. The dataset includes a diverse array of images taken in different locations, environments, and densities, making it a comprehensive resource for developing models designed for this particular task.
 
@@ -135,19 +135,23 @@ Ultralytics YOLO offers advanced real-time object detection, segmentation, and c
 
 If you incorporate the Crack Segmentation Dataset into your research, please use the following BibTeX reference:
 
-```bibtex
-@misc{ crack-bphdr_dataset,
-    title = { crack Dataset },
-    type = { Open Source Dataset },
-    author = { University },
-    howpublished = { \url{ https://universe.roboflow.com/university-bswxt/crack-bphdr } },
-    url = { https://universe.roboflow.com/university-bswxt/crack-bphdr },
-    journal = { Roboflow Universe },
-    publisher = { Roboflow },
-    year = { 2022 },
-    month = { dec },
-    note = { visited on 2024-01-23 },
-}
-```
+!!! Quote ""
+
+    === "BibTeX"
+
+        ```bibtex
+        @misc{ crack-bphdr_dataset,
+            title = { crack Dataset },
+            type = { Open Source Dataset },
+            author = { University },
+            howpublished = { \url{ https://universe.roboflow.com/university-bswxt/crack-bphdr } },
+            url = { https://universe.roboflow.com/university-bswxt/crack-bphdr },
+            journal = { Roboflow Universe },
+            publisher = { Roboflow },
+            year = { 2022 },
+            month = { dec },
+            note = { visited on 2024-01-23 },
+        }
+        ```
 
 This citation format ensures proper accreditation to the creators of the dataset and acknowledges its use in your research.

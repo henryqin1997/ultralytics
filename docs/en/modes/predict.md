@@ -6,7 +6,7 @@ keywords: Ultralytics, YOLOv8, model prediction, inference, predict mode, real-t
 
 # Model Prediction with Ultralytics YOLO
 
-<img width="1024" src="https://github.com/ultralytics/assets/raw/main/yolov8/banner-integrations.png" alt="Ultralytics YOLO ecosystem and integrations">
+<img width="1024" src="https://github.com/ultralytics/docs/releases/download/0/ultralytics-yolov8-ecosystem-integrations.avif" alt="Ultralytics YOLO ecosystem and integrations">
 
 ## Introduction
 
@@ -720,6 +720,7 @@ The `plot()` method supports various arguments to customize the output:
 | `show`       | `bool`          | Display the annotated image directly using the default image viewer.       | `False`       |
 | `save`       | `bool`          | Save the annotated image to a file specified by `filename`.                | `False`       |
 | `filename`   | `str`           | Path and name of the file to save the annotated image if `save` is `True`. | `None`        |
+| `color_mode` | `str`           | Specify the color mode, e.g., 'instance' or 'class'.                       | `'class'`     |
 
 ## Thread-Safe Inference
 

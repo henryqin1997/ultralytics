@@ -59,18 +59,29 @@ ImageWoof dataset comes in three different sizes to accommodate various research
 
 To use these variants in your training, simply replace 'imagewoof' in the dataset argument with 'imagewoof320' or 'imagewoof160'. For example:
 
-```python
-from ultralytics import YOLO
+!!! Example "Example"
 
-# Load a model
-model = YOLO("yolov8n-cls.pt")  # load a pretrained model (recommended for training)
+    === "Python"
 
-# For medium-sized dataset
-model.train(data="imagewoof320", epochs=100, imgsz=224)
+        ```python
+        from ultralytics import YOLO
 
-# For small-sized dataset
-model.train(data="imagewoof160", epochs=100, imgsz=224)
-```
+        # Load a model
+        model = YOLO("yolov8n-cls.pt")  # load a pretrained model (recommended for training)
+
+        # For medium-sized dataset
+        model.train(data="imagewoof320", epochs=100, imgsz=224)
+
+        # For small-sized dataset
+        model.train(data="imagewoof160", epochs=100, imgsz=224)
+        ```
+
+    === "CLI"
+
+        ```bash
+        # Load a pretrained model and train on the small-sized dataset
+        yolo classify train model=yolov8n-cls.pt data=imagewoof320 epochs=100 imgsz=224
+        ```
 
 It's important to note that using smaller images will likely yield lower performance in terms of classification accuracy. However, it's an excellent way to iterate quickly in the early stages of model development and prototyping.
 
@@ -78,7 +89,7 @@ It's important to note that using smaller images will likely yield lower perform
 
 The ImageWoof dataset contains colorful images of various dog breeds, providing a challenging dataset for image classification tasks. Here are some examples of images from the dataset:
 
-![Dataset sample image](https://user-images.githubusercontent.com/26833433/239357533-ec833254-4351-491b-8cb3-59578ea5d0b2.png)
+![Dataset sample image](https://github.com/ultralytics/docs/releases/download/0/imagewoof-dataset-sample.avif)
 
 The example showcases the subtle differences and similarities among the different dog breeds in the ImageWoof dataset, highlighting the complexity and difficulty of the classification task.
 
