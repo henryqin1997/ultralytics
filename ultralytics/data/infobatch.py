@@ -35,6 +35,7 @@ def info_hack_indices(self):
                                 "https://pytorch.org/docs/stable/data.html#torch.utils.data.IterableDataset for examples.")
             warnings.warn(warn_msg)
         if isinstance(self._dataset, InfoBatch):
+            assert self._dataset.cur_batch_index==None, 'unconsumed indices! using infobatch with prefetching? please update the corresponding logics'
             self._dataset.set_active_indices(indices)
         return data
 
@@ -118,6 +119,7 @@ class InfoBatch(Dataset):
             loss_val = iv_whole_group[1]
         self.scores[indices.cpu().long()] = loss_val.cpu()
         values.mul_(weights)
+        self.cur_batch_index=None
         return values.mean()
 
     def __len__(self):
@@ -145,7 +147,7 @@ class InfoBatch(Dataset):
             remained_indices.extend(selected_indices)
         self.num_pruned_samples += len(self.dataset) - len(remained_indices)
         np.random.shuffle(remained_indices)
-        print('#well learned samples %d, #pruned samples %d, len(dataset) = %d' % (np.sum(well_learned_mask), len(self.dataset) - len(remained_indices), len(self.dataset)))
+        # print('#well learned samples %d, #pruned samples %d, len(dataset) = %d' % (np.sum(well_learned_mask), len(self.dataset) - len(remained_indices), len(self.dataset)))
         return remained_indices
 
     @property
