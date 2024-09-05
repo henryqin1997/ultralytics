@@ -227,24 +227,61 @@ class YOLODataset(BaseDataset):
         label["instances"] = Instances(bboxes, segments, keypoints, bbox_format=bbox_format, normalized=normalized)
         return label
 
+    # @staticmethod
+    # def collate_fn(batch):
+    #     """Collates data samples into batches."""
+    #     new_batch = {}
+    #     keys = batch[0].keys()
+    #     values = list(zip(*[list(b.values()) for b in batch]))
+    #     for i, k in enumerate(keys):
+    #         value = values[i]
+    #         if k == "img":
+    #             value = torch.stack(value, 0)
+    #         if k in {"masks", "keypoints", "bboxes", "cls", "segments", "obb"}:
+    #             value = torch.cat(value, 0)
+    #         new_batch[k] = value
+    #     new_batch["batch_idx"] = list(new_batch["batch_idx"])
+    #     for i in range(len(new_batch["batch_idx"])):
+    #         new_batch["batch_idx"][i] += i  # add target image index for build_targets()
+    #     new_batch["batch_idx"] = torch.cat(new_batch["batch_idx"], 0)
+    #     return new_batch
+    
+    ##InfoBatch Overwritten##
     @staticmethod
     def collate_fn(batch):
         """Collates data samples into batches."""
         new_batch = {}
-        keys = batch[0].keys()
-        values = list(zip(*[list(b.values()) for b in batch]))
-        for i, k in enumerate(keys):
-            value = values[i]
-            if k == "img":
-                value = torch.stack(value, 0)
-            if k in {"masks", "keypoints", "bboxes", "cls", "segments", "obb"}:
-                value = torch.cat(value, 0)
-            new_batch[k] = value
-        new_batch["batch_idx"] = list(new_batch["batch_idx"])
-        for i in range(len(new_batch["batch_idx"])):
-            new_batch["batch_idx"][i] += i  # add target image index for build_targets()
-        new_batch["batch_idx"] = torch.cat(new_batch["batch_idx"], 0)
-        return new_batch
+        if isinstance(batch[0],tuple):
+            keys = batch[0][1].keys()
+            values = list(zip(*[list(b[1].values()) for b in batch]))
+            indices = [b[0] for b in batch]
+            for i, k in enumerate(keys):
+                value = values[i]
+                if k == "img":
+                    value = torch.stack(value, 0)
+                if k in {"masks", "keypoints", "bboxes", "cls", "segments", "obb"}:
+                    value = torch.cat(value, 0)
+                new_batch[k] = value
+            new_batch["batch_idx"] = list(new_batch["batch_idx"])
+            for i in range(len(new_batch["batch_idx"])):
+                new_batch["batch_idx"][i] += i  # add target image index for build_targets()
+            new_batch["batch_idx"] = torch.cat(new_batch["batch_idx"], 0)
+            return torch.tensor(indices, dtype=torch.long), new_batch
+        else:
+            keys = batch[0].keys()
+            values = list(zip(*[list(b.values()) for b in batch]))
+            for i, k in enumerate(keys):
+                value = values[i]
+                if k == "img":
+                    value = torch.stack(value, 0)
+                if k in {"masks", "keypoints", "bboxes", "cls", "segments", "obb"}:
+                    value = torch.cat(value, 0)
+                new_batch[k] = value
+            new_batch["batch_idx"] = list(new_batch["batch_idx"])
+            for i in range(len(new_batch["batch_idx"])):
+                new_batch["batch_idx"][i] += i  # add target image index for build_targets()
+            new_batch["batch_idx"] = torch.cat(new_batch["batch_idx"], 0)
+            return new_batch
 
 
 class YOLOMultiModalDataset(YOLODataset):

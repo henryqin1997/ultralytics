@@ -52,7 +52,7 @@ from ultralytics.utils.torch_utils import (
     strip_optimizer,
     torch_distributed_zero_first,
 )
-
+from ultralytics.data.infobatch import InfoBatch
 
 class BaseTrainer:
     """
@@ -285,7 +285,9 @@ class BaseTrainer:
 
         # Dataloaders
         batch_size = self.batch_size // max(world_size, 1)
+        # LOGGER.info('trainer.trainset: ', self.trainset)
         self.train_loader = self.get_dataloader(self.trainset, batch_size=batch_size, rank=LOCAL_RANK, mode="train")
+        # LOGGER.info('trainer.train_loader: ', self.train_loader)
         if RANK in {-1, 0}:
             # Note: When training DOTA dataset, double batch size could get OOM on images with >2000 objects.
             self.test_loader = self.get_dataloader(
@@ -356,7 +358,7 @@ class BaseTrainer:
             if epoch == (self.epochs - self.args.close_mosaic):
                 self._close_dataloader_mosaic()
                 self.train_loader.reset()
-
+    
             if RANK in {-1, 0}:
                 LOGGER.info(self.progress_string())
                 pbar = TQDM(enumerate(self.train_loader), total=nb)
@@ -379,8 +381,11 @@ class BaseTrainer:
                 # Forward
                 with autocast(self.amp):
                     batch = self.preprocess_batch(batch)
-                    import pdb; pdb.set_trace()
                     self.loss, self.loss_items = self.model(batch)
+                    # LOGGER.warn(self.loss)
+                    # LOGGER.warn(self.loss_items)
+                    if isinstance(self.train_loader.dataset, InfoBatch):
+                        self.loss = self.train_loader.dataset.update(self.loss)
                     if RANK != -1:
                         self.loss *= world_size
                     self.tloss = (

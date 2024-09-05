@@ -62,6 +62,7 @@ from ultralytics.utils.loss import (
     E2EDetectLoss,
     v8ClassificationLoss,
     v8DetectionLoss,
+    v8DetectionInfoBatchLoss,
     v8OBBLoss,
     v8PoseLoss,
     v8SegmentationLoss,
@@ -381,9 +382,14 @@ class DetectionModel(BaseModel):
         y[-1] = y[-1][..., i:]  # small
         return y
 
+    # def init_criterion(self):
+    #     """Initialize the loss criterion for the DetectionModel."""
+    #     return E2EDetectLoss(self) if getattr(self, "end2end", False) else v8DetectionLoss(self)
+
+    ##InfoBatch Adaption##
     def init_criterion(self):
         """Initialize the loss criterion for the DetectionModel."""
-        return E2EDetectLoss(self) if getattr(self, "end2end", False) else v8DetectionLoss(self)
+        return E2EDetectLoss(self) if getattr(self, "end2end", False) else v8DetectionInfoBatchLoss(self)
 
 
 class OBBModel(DetectionModel):

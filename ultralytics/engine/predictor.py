@@ -46,7 +46,9 @@ from ultralytics.utils import DEFAULT_CFG, LOGGER, MACOS, WINDOWS, callbacks, co
 from ultralytics.utils.checks import check_imgsz, check_imshow
 from ultralytics.utils.files import increment_path
 from ultralytics.utils.torch_utils import select_device, smart_inference_mode
-
+####infobatch develop code####
+from ultralytics.utils import LOGGER
+########
 STREAM_WARNING = """
 WARNING ⚠️ inference results will accumulate in RAM unless `stream=True` is passed, causing potential out-of-memory
 errors for large sources or long-running streams and videos. See https://docs.ultralytics.com/modes/predict/ for help.
