@@ -102,7 +102,6 @@ class InfoBatch(Dataset):
         self.cur_batch_index = cur_batch_indices
 
     def update(self, values):
-        print("socres updated")
         assert isinstance(values, torch.Tensor)
         batch_size = values.shape[0]
         assert len(self.cur_batch_index) == batch_size, 'not enough index'
