@@ -4,7 +4,7 @@ To make the infobatch adaption, we adapt the Detection model's V8DetectionLoss t
 
 In the trainer part, we adapt the BaseTrainer._do_train function for the InfoBatch loss update step.
 
-
+The major changes can be seen in commit 46a75c0ed752439f1f93e2d760d0c163a7d3641a.
 
 ------
 <div align="center">
