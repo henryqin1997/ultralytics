@@ -1,4 +1,10 @@
-Adapting YOLO detection models with Infobatch
+# Adapting YOLO detection models with Infobatch
+
+To make the infobatch adaption, we adapt the Detection model's V8DetectionLoss to a per-sample-based one. As in the original calculation, the bbox losses are summed for calculation, one should sum it to keep consistent with the original calculation. Then substitute the dataset in build_dataset and the sampler in build_dataloader. The collate_fn also needs to be adapted for index collection. Search "##InfoBatch" to find the adapted parts of code. 
+
+In the trainer part, we adapt the BaseTrainer._do_train function for the InfoBatch loss update step.
+
+
 
 ------
 <div align="center">
