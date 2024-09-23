@@ -52,12 +52,10 @@ from ultralytics.utils.torch_utils import (
     strip_optimizer,
     torch_distributed_zero_first,
 )
-
+from ultralytics.data.infobatch import InfoBatch
 
 class BaseTrainer:
     """
-    BaseTrainer.
-
     A base class for creating trainers.
 
     Attributes:
@@ -174,9 +172,11 @@ class BaseTrainer:
             world_size = len(self.args.device.split(","))
         elif isinstance(self.args.device, (tuple, list)):  # i.e. device=[0, 1, 2, 3] (multi-GPU from CLI is list)
             world_size = len(self.args.device)
+        elif self.args.device in {"cpu", "mps"}:  # i.e. device='cpu' or 'mps'
+            world_size = 0
         elif torch.cuda.is_available():  # i.e. device=None or device='' or device=number
             world_size = 1  # default to device 0
-        else:  # i.e. device='cpu' or 'mps'
+        else:  # i.e. device=None or device=''
             world_size = 0
 
         # Run subprocess if DDP training, else train normally
@@ -228,7 +228,6 @@ class BaseTrainer:
 
     def _setup_train(self, world_size):
         """Builds dataloaders and optimizer on correct rank process."""
-
         # Model
         self.run_callbacks("on_pretrain_routine_start")
         ckpt = self.setup_model()
@@ -286,7 +285,9 @@ class BaseTrainer:
 
         # Dataloaders
         batch_size = self.batch_size // max(world_size, 1)
+        # LOGGER.info('trainer.trainset: ', self.trainset)
         self.train_loader = self.get_dataloader(self.trainset, batch_size=batch_size, rank=LOCAL_RANK, mode="train")
+        # LOGGER.info('trainer.train_loader: ', self.train_loader)
         if RANK in {-1, 0}:
             # Note: When training DOTA dataset, double batch size could get OOM on images with >2000 objects.
             self.test_loader = self.get_dataloader(
@@ -357,7 +358,7 @@ class BaseTrainer:
             if epoch == (self.epochs - self.args.close_mosaic):
                 self._close_dataloader_mosaic()
                 self.train_loader.reset()
-
+    
             if RANK in {-1, 0}:
                 LOGGER.info(self.progress_string())
                 pbar = TQDM(enumerate(self.train_loader), total=nb)
@@ -381,6 +382,10 @@ class BaseTrainer:
                 with autocast(self.amp):
                     batch = self.preprocess_batch(batch)
                     self.loss, self.loss_items = self.model(batch)
+                    # LOGGER.warn(self.loss)
+                    # LOGGER.warn(self.loss_items)
+                    if isinstance(self.train_loader.dataset, InfoBatch):
+                        self.loss = self.train_loader.dataset.update(self.loss)
                     if RANK != -1:
                         self.loss *= world_size
                     self.tloss = (
@@ -476,11 +481,15 @@ class BaseTrainer:
         torch.cuda.empty_cache()
         self.run_callbacks("teardown")
 
+    def read_results_csv(self):
+        """Read results.csv into a dict using pandas."""
+        import pandas as pd  # scope for faster 'import ultralytics'
+
+        return {k.strip(): v for k, v in pd.read_csv(self.csv).to_dict(orient="list").items()}
+
     def save_model(self):
         """Save model training checkpoints with additional metadata."""
         import io
-
-        import pandas as pd  # scope for faster 'import ultralytics'
 
         # Serialize ckpt to a byte buffer once (faster than repeated torch.save() calls)
         buffer = io.BytesIO()
@@ -494,7 +503,7 @@ class BaseTrainer:
                 "optimizer": convert_optimizer_state_dict_to_fp16(deepcopy(self.optimizer.state_dict())),
                 "train_args": vars(self.args),  # save as dict
                 "train_metrics": {**self.metrics, **{"fitness": self.fitness}},
-                "train_results": {k.strip(): v for k, v in pd.read_csv(self.csv).to_dict(orient="list").items()},
+                "train_results": self.read_results_csv(),
                 "date": datetime.now().isoformat(),
                 "version": __version__,
                 "license": "AGPL-3.0 (https://ultralytics.com/license)",
@@ -634,7 +643,7 @@ class BaseTrainer:
         pass
 
     def on_plot(self, name, data=None):
-        """Registers plots (e.g. to be consumed in callbacks)"""
+        """Registers plots (e.g. to be consumed in callbacks)."""
         path = Path(name)
         self.plots[path] = {"data": data, "timestamp": time.time()}
 
@@ -644,6 +653,9 @@ class BaseTrainer:
             if f.exists():
                 strip_optimizer(f)  # strip optimizers
                 if f is self.best:
+                    if self.last.is_file():  # update best.pt train_metrics from last.pt
+                        k = "train_results"
+                        torch.save({**torch.load(self.best), **{k: torch.load(self.last)[k]}}, self.best)
                     LOGGER.info(f"\nValidating {f}...")
                     self.validator.args.plots = self.args.plots
                     self.metrics = self.validator(model=f)
@@ -730,7 +742,6 @@ class BaseTrainer:
         Returns:
             (torch.optim.Optimizer): The constructed optimizer.
         """
-
         g = [], [], []  # optimizer parameter groups
         bn = tuple(v for k, v in nn.__dict__.items() if "Norm" in k)  # normalization layers, i.e. BatchNorm2d()
         if name == "auto":

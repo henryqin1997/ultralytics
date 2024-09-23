@@ -7,7 +7,7 @@ from copy import copy
 import numpy as np
 import torch.nn as nn
 
-from ultralytics.data import build_dataloader, build_yolo_dataset
+from ultralytics.data import build_dataloader, build_yolo_dataset, InfoBatch
 from ultralytics.engine.trainer import BaseTrainer
 from ultralytics.models import yolo
 from ultralytics.nn.tasks import DetectionModel
@@ -24,7 +24,7 @@ class DetectionTrainer(BaseTrainer):
         ```python
         from ultralytics.models.yolo.detect import DetectionTrainer
 
-        args = dict(model='yolov8n.pt', data='coco8.yaml', epochs=3)
+        args = dict(model="yolov8n.pt", data="coco8.yaml", epochs=3)
         trainer = DetectionTrainer(overrides=args)
         trainer.train()
         ```
@@ -60,7 +60,7 @@ class DetectionTrainer(BaseTrainer):
         if self.args.multi_scale:
             imgs = batch["img"]
             sz = (
-                random.randrange(self.args.imgsz * 0.5, self.args.imgsz * 1.5 + self.stride)
+                random.randrange(int(self.args.imgsz * 0.5), int(self.args.imgsz * 1.5 + self.stride))
                 // self.stride
                 * self.stride
             )  # size
@@ -138,6 +138,7 @@ class DetectionTrainer(BaseTrainer):
 
     def plot_training_labels(self):
         """Create a labeled training plot of the YOLO model."""
+        # print(self.train_loader.dataset.dataset.labels)
         boxes = np.concatenate([lb["bboxes"] for lb in self.train_loader.dataset.labels], 0)
         cls = np.concatenate([lb["cls"] for lb in self.train_loader.dataset.labels], 0)
         plot_labels(boxes, cls.squeeze(), names=self.data["names"], save_dir=self.save_dir, on_plot=self.on_plot)
